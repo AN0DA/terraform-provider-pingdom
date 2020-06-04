@@ -1,113 +1,117 @@
 package pingdom
 
-import (
-	"fmt"
-	"log"
-	"strconv"
+///
+/// Current Pingdom API for Go does not support contacts
+///
 
-	"github.com/grnhse/go-pingdom/pingdom"
-	"github.com/hashicorp/terraform/helper/schema"
-)
+// import (
+// 	"fmt"
+// 	"log"
+// 	"strconv"
 
-func resourcePingdomUser() *schema.Resource {
-	return &schema.Resource{
-		Create: resourcePingdomUserCreate,
-		Read:   resourcePingdomUserRead,
-		Update: resourcePingdomUserUpdate,
-		Delete: resourcePingdomUserDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
-		Schema: map[string]*schema.Schema{
-			"username": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-		},
-	}
-}
+// 	"github.com/AN0DA/go-pingdom/pingdom"
+// 	"github.com/hashicorp/terraform/helper/schema"
+// )
 
-type commonUserParams struct {
-	Username string
-}
+// func resourcePingdomUser() *schema.Resource {
+// 	return &schema.Resource{
+// 		Create: resourcePingdomUserCreate,
+// 		Read:   resourcePingdomUserRead,
+// 		Update: resourcePingdomUserUpdate,
+// 		Delete: resourcePingdomUserDelete,
+// 		Importer: &schema.ResourceImporter{
+// 			State: schema.ImportStatePassthrough,
+// 		},
+// 		Schema: map[string]*schema.Schema{
+// 			"username": {
+// 				Type:     schema.TypeString,
+// 				Required: true,
+// 			},
+// 		},
+// 	}
+// }
 
-func userForResource(d *schema.ResourceData) (*pingdom.User, error) {
-	userParams := commonUserParams{}
+// type commonUserParams struct {
+// 	Username string
+// }
 
-	// required
-	if v, ok := d.GetOk("username"); ok {
-		userParams.Username = v.(string)
-	}
+// func userForResource(d *schema.ResourceData) (*pingdom.User, error) {
+// 	userParams := commonUserParams{}
 
-	return &pingdom.User{
-		Username: userParams.Username,
-	}, nil
-}
+// 	// required
+// 	if v, ok := d.GetOk("username"); ok {
+// 		userParams.Username = v.(string)
+// 	}
 
-func resourcePingdomUserCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	return &pingdom.User{
+// 		Username: userParams.Username,
+// 	}, nil
+// }
 
-	user, err := userForResource(d)
-	if err != nil {
-		return err
-	}
+// func resourcePingdomUserCreate(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	log.Printf("[DEBUG] User create configuration: %#v", d.Get("username"))
-	result, err := client.Users.Create(user)
-	if err != nil {
-		return err
-	}
+// 	user, err := userForResource(d)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	d.SetId(fmt.Sprintf("%d", result.Id))
-	return nil
-}
+// 	log.Printf("[DEBUG] User create configuration: %#v", d.Get("username"))
+// 	result, err := client.Users.Create(user)
+// 	if err != nil {
+// 		return err
+// 	}
 
-func resourcePingdomUserRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	d.SetId(fmt.Sprintf("%d", result.Id))
+// 	return nil
+// }
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
-	user, err := client.Users.Read(id)
-	if err != nil {
-		return fmt.Errorf("Error retrieving user: %s", err)
-	}
+// func resourcePingdomUserRead(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	d.Set("username", user.Username)
-	return nil
-}
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
+// 	user, err := client.Users.Read(id)
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving user: %s", err)
+// 	}
 
-func resourcePingdomUserUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	d.Set("username", user.Username)
+// 	return nil
+// }
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
-	user, err := userForResource(d)
-	if err != nil {
-		return err
-	}
+// func resourcePingdomUserUpdate(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	log.Printf("[DEBUG] User update configuration: %#v", d.Get("username"))
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
+// 	user, err := userForResource(d)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if _, err = client.Users.Update(id, user); err != nil {
-		return fmt.Errorf("Error updating user: %s", err)
-	}
+// 	log.Printf("[DEBUG] User update configuration: %#v", d.Get("username"))
 
-	return nil
-}
+// 	if _, err = client.Users.Update(id, user); err != nil {
+// 		return fmt.Errorf("Error updating user: %s", err)
+// 	}
 
-func resourcePingdomUserDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	return nil
+// }
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
-	if _, err := client.Users.Delete(id); err != nil {
-		return fmt.Errorf("Error deleting user: %s", err)
-	}
-	return nil
-}
+// func resourcePingdomUserDelete(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
+
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
+// 	if _, err := client.Users.Delete(id); err != nil {
+// 		return fmt.Errorf("Error deleting user: %s", err)
+// 	}
+// 	return nil
+// }

@@ -1,130 +1,134 @@
 package pingdom
 
-import (
-	"fmt"
-	"log"
-	"strconv"
+///
+/// Current Pingdom API for Go does not support contacts
+///
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/grnhse/go-pingdom/pingdom"
-)
+// import (
+// 	"fmt"
+// 	"log"
+// 	"strconv"
 
-func resourcePingdomTeam() *schema.Resource {
-	return &schema.Resource{
-		Create: resourcePingdomTeamCreate,
-		Read:   resourcePingdomTeamRead,
-		Update: resourcePingdomTeamUpdate,
-		Delete: resourcePingdomTeamDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: false,
-			},
-		},
-	}
-}
+// 	"github.com/AN0DA/go-pingdom/pingdom"
+// 	"github.com/hashicorp/terraform/helper/schema"
+// )
 
-type commonTeamParams struct {
-	Name string
-}
+// func resourcePingdomTeam() *schema.Resource {
+// 	return &schema.Resource{
+// 		Create: resourcePingdomTeamCreate,
+// 		Read:   resourcePingdomTeamRead,
+// 		Update: resourcePingdomTeamUpdate,
+// 		Delete: resourcePingdomTeamDelete,
+// 		Importer: &schema.ResourceImporter{
+// 			State: schema.ImportStatePassthrough,
+// 		},
+// 		Schema: map[string]*schema.Schema{
+// 			"name": {
+// 				Type:     schema.TypeString,
+// 				Required: true,
+// 				ForceNew: false,
+// 			},
+// 		},
+// 	}
+// }
 
-func teamForResource(d *schema.ResourceData) (*pingdom.TeamData, error) {
-	teamParams := commonTeamParams{}
+// type commonTeamParams struct {
+// 	Name string
+// }
 
-	// required
-	if v, ok := d.GetOk("name"); ok {
-		teamParams.Name = v.(string)
-	}
+// func teamForResource(d *schema.ResourceData) (*pingdom.TeamData, error) {
+// 	teamParams := commonTeamParams{}
 
-	return &pingdom.TeamData{
-		Name: teamParams.Name,
-	}, nil
-}
+// 	// required
+// 	if v, ok := d.GetOk("name"); ok {
+// 		teamParams.Name = v.(string)
+// 	}
 
-func resourcePingdomTeamCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	return &pingdom.TeamData{
+// 		Name: teamParams.Name,
+// 	}, nil
+// }
 
-	team, err := teamForResource(d)
-	if err != nil {
-		return err
-	}
+// func resourcePingdomTeamCreate(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	log.Printf("[DEBUG] Team create configuration: %#v", d.Get("name"))
-	result, err := client.Teams.Create(team)
-	if err != nil {
-		return err
-	}
+// 	team, err := teamForResource(d)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	d.SetId(result.ID)
-	return nil
-}
+// 	log.Printf("[DEBUG] Team create configuration: %#v", d.Get("name"))
+// 	result, err := client.Teams.Create(team)
+// 	if err != nil {
+// 		return err
+// 	}
 
-func resourcePingdomTeamRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	d.SetId(result.ID)
+// 	return nil
+// }
 
-	teams, err := client.Teams.List()
-	if err != nil {
-		return fmt.Errorf("Error retrieving list of teams: %s", err)
-	}
-	exists := false
-	for _, team := range teams {
-		if team.ID == d.Id() {
-			exists = true
-			break
-		}
-	}
-	if !exists {
-		d.SetId("")
-		return nil
-	}
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
-	team, err := client.Teams.Read(id)
-	if err != nil {
-		return fmt.Errorf("Error retrieving team: %s", err)
-	}
+// func resourcePingdomTeamRead(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	d.Set("name", team.Name)
-	return nil
-}
+// 	teams, err := client.Teams.List()
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving list of teams: %s", err)
+// 	}
+// 	exists := false
+// 	for _, team := range teams {
+// 		if team.ID == d.Id() {
+// 			exists = true
+// 			break
+// 		}
+// 	}
+// 	if !exists {
+// 		d.SetId("")
+// 		return nil
+// 	}
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
+// 	team, err := client.Teams.Read(id)
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving team: %s", err)
+// 	}
 
-func resourcePingdomTeamUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	d.Set("name", team.Name)
+// 	return nil
+// }
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
+// func resourcePingdomTeamUpdate(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	team, err := teamForResource(d)
-	if err != nil {
-		return err
-	}
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
 
-	log.Printf("[DEBUG] Team update configuration: %#v", d.Get("name"))
+// 	team, err := teamForResource(d)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if _, err = client.Teams.Update(id, team); err != nil {
-		return fmt.Errorf("Error updating team: %s", err)
-	}
-	return nil
-}
+// 	log.Printf("[DEBUG] Team update configuration: %#v", d.Get("name"))
 
-func resourcePingdomTeamDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// 	if _, err = client.Teams.Update(id, team); err != nil {
+// 		return fmt.Errorf("Error updating team: %s", err)
+// 	}
+// 	return nil
+// }
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
-	if _, err = client.Teams.Delete(id); err != nil {
-		return fmt.Errorf("Error deleting team: %s", err)
-	}
+// func resourcePingdomTeamDelete(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	return nil
-}
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
+// 	if _, err = client.Teams.Delete(id); err != nil {
+// 		return fmt.Errorf("Error deleting team: %s", err)
+// 	}
+
+// 	return nil
+// }

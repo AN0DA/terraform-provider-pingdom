@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 
-	"github.com/grnhse/go-pingdom/pingdom"
+	"github.com/AN0DA/go-pingdom/pingdom"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourcePingdomCheck() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePingdomCheckCreate,
-		Read:   resourcePingdomCheckRead,
-		Update: resourcePingdomCheckUpdate,
+		//Create: resourcePingdomCheckCreate, 	//currently unsupported
+		//Read:   resourcePingdomCheckRead,		//currently unsupported
+		//Update: resourcePingdomCheckUpdate,	//currently unsupported
 		Delete: resourcePingdomCheckDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -396,177 +395,177 @@ func checkForResource(d *schema.ResourceData) (pingdom.Check, error) {
 	}
 }
 
-func resourcePingdomCheckCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// func resourcePingdomCheckCreate(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	check, err := checkForResource(d)
-	if err != nil {
-		return err
-	}
+// 	check, err := checkForResource(d)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	log.Printf("[DEBUG] Check create configuration: %#v, %#v", d.Get("name"), d.Get("hostname"))
+// 	log.Printf("[DEBUG] Check create configuration: %#v, %#v", d.Get("name"), d.Get("hostname"))
 
-	ck, err := client.Checks.Create(check)
-	if err != nil {
-		return err
-	}
+// 	ck, err := client.Checks.Create(check)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	d.SetId(strconv.Itoa(ck.ID))
+// 	d.SetId(strconv.Itoa(ck.ID))
 
-	if v, ok := d.GetOk("publicreport"); ok && v.(bool) {
-		client.PublicReport.PublishCheck(ck.ID)
-	}
+// 	if v, ok := d.GetOk("publicreport"); ok && v.(bool) {
+// 		client.PublicReport.PublishCheck(ck.ID)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func resourcePingdomCheckRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// func resourcePingdomCheckRead(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
-	cl, err := client.Checks.List()
-	if err != nil {
-		return fmt.Errorf("Error retrieving list of checks: %s", err)
-	}
-	exists := false
-	for _, ckid := range cl {
-		if ckid.ID == id {
-			exists = true
-			break
-		}
-	}
-	if !exists {
-		d.SetId("")
-		return nil
-	}
-	ck, err := client.Checks.Read(id)
-	if err != nil {
-		return fmt.Errorf("Error retrieving check: %s", err)
-	}
-	rl, err := client.PublicReport.List()
-	if err != nil {
-		return fmt.Errorf("Error retrieving list of public report checks: %s", err)
-	}
-	inPublicReport := false
-	for _, ckid := range rl {
-		if ckid.ID == id {
-			inPublicReport = true
-			break
-		}
-	}
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
+// 	cl, err := client.Checks.List()
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving list of checks: %s", err)
+// 	}
+// 	exists := false
+// 	for _, ckid := range cl {
+// 		if ckid.ID == id {
+// 			exists = true
+// 			break
+// 		}
+// 	}
+// 	if !exists {
+// 		d.SetId("")
+// 		return nil
+// 	}
+// 	ck, err := client.Checks.Read(id)
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving check: %s", err)
+// 	}
+// 	rl, err := client.PublicReport.List()
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving list of public report checks: %s", err)
+// 	}
+// 	inPublicReport := false
+// 	for _, ckid := range rl {
+// 		if ckid.ID == id {
+// 			inPublicReport = true
+// 			break
+// 		}
+// 	}
 
-	d.Set("host", ck.Hostname)
-	d.Set("name", ck.Name)
-	d.Set("resolution", ck.Resolution)
-	d.Set("responsetime_threshold", ck.ResponseTimeThreshold)
-	d.Set("sendnotificationwhendown", ck.SendNotificationWhenDown)
-	d.Set("notifyagainevery", ck.NotifyAgainEvery)
-	d.Set("notifywhenbackup", ck.NotifyWhenBackup)
-	d.Set("publicreport", inPublicReport)
+// 	d.Set("host", ck.Hostname)
+// 	d.Set("name", ck.Name)
+// 	d.Set("resolution", ck.Resolution)
+// 	d.Set("responsetime_threshold", ck.ResponseTimeThreshold)
+// 	d.Set("sendnotificationwhendown", ck.SendNotificationWhenDown)
+// 	d.Set("notifyagainevery", ck.NotifyAgainEvery)
+// 	d.Set("notifywhenbackup", ck.NotifyWhenBackup)
+// 	d.Set("publicreport", inPublicReport)
 
-	tags := []string{}
-	for _, tag := range ck.Tags {
-		tags = append(tags, tag.Name)
-	}
-	d.Set("tags", strings.Join(tags, ","))
+// 	tags := []string{}
+// 	for _, tag := range ck.Tags {
+// 		tags = append(tags, tag.Name)
+// 	}
+// 	d.Set("tags", strings.Join(tags, ","))
 
-	if ck.Status == "paused" {
-		d.Set("paused", true)
-	}
+// 	if ck.Status == "paused" {
+// 		d.Set("paused", true)
+// 	}
 
-	integids := schema.NewSet(
-		func(integrationId interface{}) int { return integrationId.(int) },
-		[]interface{}{},
-	)
-	for _, integrationId := range ck.IntegrationIds {
-		integids.Add(integrationId)
-	}
-	d.Set("integrationids", integids)
+// 	integids := schema.NewSet(
+// 		func(integrationId interface{}) int { return integrationId.(int) },
+// 		[]interface{}{},
+// 	)
+// 	for _, integrationId := range ck.IntegrationIds {
+// 		integids.Add(integrationId)
+// 	}
+// 	d.Set("integrationids", integids)
 
-	userids := schema.NewSet(
-		func(userId interface{}) int { return userId.(int) },
-		[]interface{}{},
-	)
-	for _, userId := range ck.UserIds {
-		userids.Add(userId)
-	}
-	d.Set("userids", userids)
+// 	userids := schema.NewSet(
+// 		func(userId interface{}) int { return userId.(int) },
+// 		[]interface{}{},
+// 	)
+// 	for _, userId := range ck.UserIds {
+// 		userids.Add(userId)
+// 	}
+// 	d.Set("userids", userids)
 
-	teamids := schema.NewSet(
-		func(userId interface{}) int { return userId.(int) },
-		[]interface{}{},
-	)
-	for _, userId := range ck.TeamIds {
-		teamids.Add(userId)
-	}
-	d.Set("teamids", teamids)
+// 	teamids := schema.NewSet(
+// 		func(userId interface{}) int { return userId.(int) },
+// 		[]interface{}{},
+// 	)
+// 	for _, userId := range ck.TeamIds {
+// 		teamids.Add(userId)
+// 	}
+// 	d.Set("teamids", teamids)
 
-	if probefilters := ck.ProbeFilters; len(probefilters) > 0 {
-		// normalise: "region: NA" -> "region:NA"
-		d.Set("probefilters", strings.Replace(probefilters[0], ": ", ":", 1))
-	}
+// 	if probefilters := ck.ProbeFilters; len(probefilters) > 0 {
+// 		// normalise: "region: NA" -> "region:NA"
+// 		d.Set("probefilters", strings.Replace(probefilters[0], ": ", ":", 1))
+// 	}
 
-	if ck.Type.HTTP != nil {
-		d.Set("type", "http")
-		d.Set("responsetime_threshold", ck.ResponseTimeThreshold)
-		d.Set("url", ck.Type.HTTP.Url)
-		d.Set("encryption", ck.Type.HTTP.Encryption)
-		d.Set("port", ck.Type.HTTP.Port)
-		d.Set("username", ck.Type.HTTP.Username)
-		d.Set("password", ck.Type.HTTP.Password)
-		d.Set("shouldcontain", ck.Type.HTTP.ShouldContain)
-		d.Set("shouldnotcontain", ck.Type.HTTP.ShouldNotContain)
-		d.Set("postdata", ck.Type.HTTP.PostData)
+// 	if ck.Type.HTTP != nil {
+// 		d.Set("type", "http")
+// 		d.Set("responsetime_threshold", ck.ResponseTimeThreshold)
+// 		d.Set("url", ck.Type.HTTP.Url)
+// 		d.Set("encryption", ck.Type.HTTP.Encryption)
+// 		d.Set("port", ck.Type.HTTP.Port)
+// 		d.Set("username", ck.Type.HTTP.Username)
+// 		d.Set("password", ck.Type.HTTP.Password)
+// 		d.Set("shouldcontain", ck.Type.HTTP.ShouldContain)
+// 		d.Set("shouldnotcontain", ck.Type.HTTP.ShouldNotContain)
+// 		d.Set("postdata", ck.Type.HTTP.PostData)
 
-		if v, ok := ck.Type.HTTP.RequestHeaders["User-Agent"]; ok {
-			if strings.HasPrefix(v, "Pingdom.com_bot_version_") {
-				delete(ck.Type.HTTP.RequestHeaders, "User-Agent")
-			}
-		}
-		d.Set("requestheaders", ck.Type.HTTP.RequestHeaders)
-	} else if ck.Type.TCP != nil {
-		d.Set("type", "tcp")
-		d.Set("port", ck.Type.TCP.Port)
-		d.Set("stringtosend", ck.Type.TCP.StringToSend)
-		d.Set("stringtoexpect", ck.Type.TCP.StringToExpect)
-	} else {
-		d.Set("type", "ping")
-	}
+// 		if v, ok := ck.Type.HTTP.RequestHeaders["User-Agent"]; ok {
+// 			if strings.HasPrefix(v, "Pingdom.com_bot_version_") {
+// 				delete(ck.Type.HTTP.RequestHeaders, "User-Agent")
+// 			}
+// 		}
+// 		d.Set("requestheaders", ck.Type.HTTP.RequestHeaders)
+// 	} else if ck.Type.TCP != nil {
+// 		d.Set("type", "tcp")
+// 		d.Set("port", ck.Type.TCP.Port)
+// 		d.Set("stringtosend", ck.Type.TCP.StringToSend)
+// 		d.Set("stringtoexpect", ck.Type.TCP.StringToExpect)
+// 	} else {
+// 		d.Set("type", "ping")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func resourcePingdomCheckUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*pingdom.Client)
+// func resourcePingdomCheckUpdate(d *schema.ResourceData, meta interface{}) error {
+// 	client := meta.(*pingdom.Client)
 
-	id, err := strconv.Atoi(d.Id())
-	if err != nil {
-		return fmt.Errorf("Error retrieving id for resource: %s", err)
-	}
+// 	id, err := strconv.Atoi(d.Id())
+// 	if err != nil {
+// 		return fmt.Errorf("Error retrieving id for resource: %s", err)
+// 	}
 
-	check, err := checkForResource(d)
-	if err != nil {
-		return err
-	}
+// 	check, err := checkForResource(d)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	log.Printf("[DEBUG] Check update configuration: %#v, %#v", d.Get("name"), d.Get("hostname"))
+// 	log.Printf("[DEBUG] Check update configuration: %#v, %#v", d.Get("name"), d.Get("hostname"))
 
-	_, err = client.Checks.Update(id, check)
-	if err != nil {
-		return fmt.Errorf("Error updating check: %s", err)
-	}
+// 	_, err = client.Checks.Update(id, check)
+// 	if err != nil {
+// 		return fmt.Errorf("Error updating check: %s", err)
+// 	}
 
-	if v, ok := d.GetOk("publicreport"); ok && v.(bool) {
-		client.PublicReport.PublishCheck(id)
-	} else {
-		client.PublicReport.WithdrawlCheck(id)
-	}
+// 	if v, ok := d.GetOk("publicreport"); ok && v.(bool) {
+// 		client.PublicReport.PublishCheck(id)
+// 	} else {
+// 		client.PublicReport.WithdrawlCheck(id)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func resourcePingdomCheckDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*pingdom.Client)
