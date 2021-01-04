@@ -1,0 +1,29 @@
+name: Lawyer
+
+on: 
+  pull_request:
+    types: [opened, edited, reopened, synchronize, closed]
+
+jobs:
+  lawyer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+        with:
+          path: main
+
+      - name: Checkout private tools
+        uses: actions/checkout@v2
+        with:
+          repository: nordcloud/mct-tc-automation
+          ssh-key: ${{ secrets.MCT_TC_AUTOMATION_SSH }}
+          path: scripts
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Execute py script
+        run: python scripts/lawyer/main.py check main/
